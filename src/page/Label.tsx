@@ -3,6 +3,7 @@ import Pagination from "../components/Pagination";
 import TableSortIcon from "../components/TableSortIcon";
 import { Button, Checkbox, LabelButton } from "../components/form";
 import { Node as _Node } from "neo4j-driver";
+import { ClipboardContext } from "../utils/contexts";
 import { EPage, EQueryView } from "../utils/enums";
 import { IPageProps } from "../utils/interfaces";
 import db from "../db";
@@ -241,16 +242,26 @@ class Label extends React.Component<ILabelProps, ILabelState> {
                             {this.state.rows.map(row => (
                                 <tr key={"tr-" + db.strInt(row.identity)}>
                                     <td>
-                                        <Button
-                                            onClick={() =>
-                                                this.props.tabManager.add({ prefix: "Node", i: row.identity }, "fa-solid fa-pen-to-square", EPage.Node, {
-                                                    id: db.getId(row),
-                                                    database: this.props.database,
-                                                })
-                                            }
-                                            icon="fa-solid fa-pen-clip"
-                                            text={"#" + db.strInt(row.identity)}
-                                        />
+                                        <div className="buttons is-flex-wrap-nowrap">
+                                            <Button
+                                                onClick={() =>
+                                                    this.props.tabManager.add({ prefix: "Node", i: row.identity }, "fa-solid fa-pen-to-square", EPage.Node, {
+                                                        id: db.getId(row),
+                                                        database: this.props.database,
+                                                    })
+                                                }
+                                                icon="fa-solid fa-pen-clip"
+                                                text={"#" + db.strInt(row.identity)}
+                                            />
+                                            <ClipboardContext.Consumer>{copy =>
+                                                <Button
+                                                    onClick={copy}
+                                                    value={row.elementId}
+                                                    icon="fa-solid fa-clipboard"
+                                                    title="Copy element id"
+                                                />
+                                            }</ClipboardContext.Consumer>
+                                        </div>
                                     </td>
                                     {settings().tableViewShowElementId && db.hasElementId && <td className="wspace-nowrap">{row.elementId}</td>}
                                     <td>
