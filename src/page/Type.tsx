@@ -279,6 +279,13 @@ class Type extends React.Component<ITypeProps, ITypeState> {
                                     {settings().tableViewShowElementId && db.hasElementId && <td className="wspace-nowrap">{row.elementId}</td>}
                                     <td>
                                         <div className="is-flex-wrap-nowrap buttons">
+                                            <Button icon="fa-solid fa-clone" color="is-outlined" title="Copy structure" onClick={() =>
+                                                    this.props.tabManager.add({ prefix: "New relationship" }, "fa-regular fa-square-plus", EPage.Rel, {
+                                                        id: null,
+                                                        referenceId: db.getId(row),
+                                                        database: db.database,
+                                                    }, new Date().getTime().toString())
+                                                } />
                                             {this.props.stashManager.button(row, this.props.database)}
                                             <Button icon="fa-regular fa-trash-can" color="is-danger is-outlined" title="Delete" onClick={() => this.setState({ delete: db.getId(row) })} />
                                         </div>

@@ -5,7 +5,7 @@ import db from "../db";
 import { Button, Textarea } from "./form";
 import { ClipboardContext } from "../utils/contexts";
 import { Date as _Date, DateTime as _DateTime, Duration as _Duration, LocalDateTime as _LocalDateTime, LocalTime as _LocalTime, Point as _Point, Time as _Time } from "neo4j-driver";
-import { getPropertyAsTemp, stringToDuration } from "../utils/fn";
+import { getPropertyAsTemp, getDefaultPropertyValue, stringToDuration } from "../utils/fn";
 
 interface IPropertiesFormProps {
     properties: t_FormProperty[];
@@ -60,12 +60,12 @@ class PropertiesForm extends React.Component<IPropertiesFormProps, IPropertiesFo
         if (i > -1) {
             props[i].type = EPropertyType[target.value];
             if (EPropertyType[target.value] === EPropertyType.List) props[i].subtype = EPropertyType.String;
-            props[i].value = this.getDefaultValue(EPropertyType[target.value]);
+            props[i].value = getDefaultPropertyValue(EPropertyType[target.value]);
             props[i].temp = getPropertyAsTemp(EPropertyType[target.value], props[i].value);
         } else {
             i = props.findIndex(p => "subtype." + p.name === target.name);
             if (i > -1) {
-                const value = this.getDefaultValue(EPropertyType[target.value]);
+                const value = getDefaultPropertyValue(EPropertyType[target.value]);
                 const temp = getPropertyAsTemp(EPropertyType[target.value], value);
                 props[i].subtype = EPropertyType[target.value];
                 props[i].value = [value];
@@ -76,36 +76,6 @@ class PropertiesForm extends React.Component<IPropertiesFormProps, IPropertiesFo
         if (i > -1) {
             this.props.updateProperties(props);
             this.setState({ focus: target.name });
-        }
-    };
-
-    getDefaultValue = (type: EPropertyType): any => {
-        const int0 = db.toInt(0);
-        switch (type) {
-            case EPropertyType.String:
-                return "";
-            case EPropertyType.Boolean:
-                return false;
-            case EPropertyType.Integer:
-                return int0;
-            case EPropertyType.Float:
-                return 0;
-            case EPropertyType.List:
-                return [];
-            case EPropertyType.Time:
-                return _Time.fromStandardDate(new Date());
-            case EPropertyType.Date:
-                return _Date.fromStandardDate(new Date());
-            case EPropertyType.DateTime:
-                return _DateTime.fromStandardDate(new Date());
-            case EPropertyType.LocalTime:
-                return _LocalTime.fromStandardDate(new Date());
-            case EPropertyType.LocalDateTime:
-                return _LocalDateTime.fromStandardDate(new Date());
-            case EPropertyType.Point:
-                return new _Point(int0, 0, 0, 0);
-            case EPropertyType.Duration:
-                return new _Duration(int0, int0, int0, int0);
         }
     };
 
@@ -132,7 +102,7 @@ class PropertiesForm extends React.Component<IPropertiesFormProps, IPropertiesFo
         if (target.value) {
             const i = props.findIndex(p => p.name === target.value);
             if (i > -1) {
-                const value = this.getDefaultValue(props[i].subtype);
+                const value = getDefaultPropertyValue(props[i].subtype);
                 props[i].value.push(value);
                 props[i].temp.push(getPropertyAsTemp(props[i].subtype, value));
                 this.props.updateProperties(props);

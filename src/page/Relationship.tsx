@@ -10,12 +10,13 @@ import { settings } from "../layout/Settings";
 import InlineNode from "../components/InlineNode";
 import PropertiesForm from "../components/PropertiesForm";
 import { t_FormProperty } from "../utils/types";
-import { getPropertyAsTemp, printProperties, resolvePropertyType } from "../utils/fn";
+import { getPropertyAsTemp, getDefaultPropertyValue, printProperties, resolvePropertyType } from "../utils/fn";
 
 interface IRelationshipProps extends IPageProps {
     database: string;
     type: string;
     id: number | string | null;
+    referenceId?: number | string | null;
 }
 
 interface IRelationshipState {
@@ -53,11 +54,13 @@ class Relationship extends React.Component<IRelationshipProps, IRelationshipStat
     create: boolean = this.props.id === null;
 
     requestData = () => {
-        if (this.create) return;
+        if (this.create && !this.props.referenceId) return;
+
+        const id = this.props.id ?? this.props.referenceId
         db.query(
             "MATCH (a)-[r]->(b) WHERE " + db.fnId("r") + " = $id RETURN r, a, b",
             {
-                id: this.props.id,
+                id: id,
             },
             this.props.database
         )
@@ -73,13 +76,21 @@ class Relationship extends React.Component<IRelationshipProps, IRelationshipStat
                 for (let key in rel.properties) {
                     const type = resolvePropertyType(rel.properties[key]);
                     const subtype = type === EPropertyType.List ? resolvePropertyType(rel.properties[key][0]) : null;
-                    props.push({ name: key + t, key: key, value: rel.properties[key], type: type, subtype: subtype, temp: getPropertyAsTemp(type, rel.properties[key], subtype) });
+                    const value = this.create ? getDefaultPropertyValue(type) : rel.properties[key];
+                    props.push({
+                        name: key + t,
+                        key: key,
+                        value: value,
+                        type: type,
+                        subtype: subtype,
+                        temp: getPropertyAsTemp(type, value, subtype),
+                    });
                 }
                 props.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
                 this.setState({
                     rel: rel,
-                    start: response.records[0].get("a") as _Node,
-                    end: response.records[0].get("b") as _Node,
+                    start: this.create ? null : response.records[0].get("a") as _Node,
+                    end: this.create ? null : response.records[0].get("b") as _Node,
                     type: rel.type,
                     properties: props,
                 });

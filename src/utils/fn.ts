@@ -1,6 +1,6 @@
 import db from "../db";
 import { EPropertyType } from "./enums";
-import { DateTime as _DateTime, Duration as _Duration, LocalDateTime as _LocalDateTime, LocalTime as _LocalTime, Point as _Point, Time as _Time } from "neo4j-driver";
+import { Date as _Date, DateTime as _DateTime, Duration as _Duration, LocalDateTime as _LocalDateTime, LocalTime as _LocalTime, Point as _Point, Time as _Time } from "neo4j-driver";
 import { t_FormProperty } from "./types";
 
 export function toJSON(data: any[] | object): string {
@@ -82,6 +82,36 @@ export function getPropertyAsTemp(type: EPropertyType, value: any, subtype: EPro
             return value ? value.toString() : null;
     }
 }
+
+export function getDefaultPropertyValue(type: EPropertyType): any {
+    const int0 = db.toInt(0);
+    switch (type) {
+        case EPropertyType.String:
+            return "";
+        case EPropertyType.Boolean:
+            return false;
+        case EPropertyType.Integer:
+            return int0;
+        case EPropertyType.Float:
+            return 0;
+        case EPropertyType.List:
+            return [];
+        case EPropertyType.Time:
+            return _Time.fromStandardDate(new Date());
+        case EPropertyType.Date:
+            return _Date.fromStandardDate(new Date());
+        case EPropertyType.DateTime:
+            return _DateTime.fromStandardDate(new Date());
+        case EPropertyType.LocalTime:
+            return _LocalTime.fromStandardDate(new Date());
+        case EPropertyType.LocalDateTime:
+            return _LocalDateTime.fromStandardDate(new Date());
+        case EPropertyType.Point:
+            return new _Point(int0, 0, 0, 0);
+        case EPropertyType.Duration:
+            return new _Duration(int0, int0, int0, int0);
+    }
+};
 
 export function printProperties(properties: t_FormProperty[]): string {
     return "{" + properties.map(p => p.key + ": " + printProperty(p)).join(", ") + "}";

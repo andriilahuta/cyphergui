@@ -255,6 +255,13 @@ class Label extends React.Component<ILabelProps, ILabelState> {
                                     {settings().tableViewShowElementId && db.hasElementId && <td className="wspace-nowrap">{row.elementId}</td>}
                                     <td>
                                         <div className="buttons is-flex-wrap-nowrap">
+                                            <Button icon="fa-solid fa-clone" color="is-outlined" title="Copy structure" onClick={() =>
+                                                this.props.tabManager.add({ prefix: "New node" }, "fa-solid fa-square-plus", EPage.Node, {
+                                                    id: null,
+                                                    referenceId: db.getId(row),
+                                                    database: this.props.database,
+                                                }, new Date().getTime().toString())
+                                            } />
                                             {this.props.stashManager.button(row, this.props.database)}
                                             <Button icon="fa-regular fa-trash-can" color="is-danger is-outlined" title="Delete" onClick={() => this.setState({ delete: db.getId(row) })} />
                                         </div>
